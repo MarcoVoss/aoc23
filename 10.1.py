@@ -1,11 +1,11 @@
 
 T = [list(l) for l in open("aoc23/10.1.txt", 'r').readlines()]
 
-# (y, x)
 TOP = (-1, 0)
 RIGHT = (0, 1)
 BOTTOM = (1, 0)
 LEFT = (0, -1)
+NO = (0, 0)
 
 directions = {
     "|": (TOP, BOTTOM),
@@ -14,52 +14,44 @@ directions = {
     "J": (TOP, LEFT),
     "7": (LEFT, BOTTOM),
     "F": (BOTTOM, RIGHT),
-    ".": (),
+    ".": (NO, NO),
     "S": (TOP, RIGHT, BOTTOM, LEFT),
 }
 
-def find_start():
-    for i, t in enumerate(T):
-        try:
-            return (i, t.index("S"))
-        except ValueError:
-            pass
-
-
-def is_connected(i0: int, t0: int, i1: int, t1: int) -> bool:
-    return (
-        0 <= i1 < len(T)
-        and 0 <= t1 < len(T[i1])
-        and any((i0, t0) == ((i := i1 + direction[0]), (t := t1 + direction[1]))
-        for direction in directions.get(T[i1][t1])
-    ))
-
-
-def find_next(i0: int, t0: int, i1: int, t1: int) -> tuple[int, int]:
-    return [
-        (i, t)
-        for direction in directions.get(T[i1][t1])
-        if (i0, t0) != ((i := i1 + direction[0]), (t := t1 + direction[1]))
-    ][0]
-
-i, t = find_start()
-
-ways = [
-    ((i, t), (i + direction[0], t + direction[1]))
-    for direction in directions.get(T[i][t])
+D = [
+    [
+        (
+            (i + d[0][0], j + d[0][1]),
+            (i + d[1][0], j + d[1][1]),
+        )
+        for j, p in enumerate(t)
+        if (d := directions.get(p))
+    ]
+    for i, t in enumerate(T)
 ]
 
-i = 0
-while ways:
-    ways = [
-        (curr, (new))
-        for (prev, curr) in ways
-        if (
-            T[curr[0]][curr[1]] not in [".", "S"]
-            and (new := find_next(*prev, *curr))
-        )
-    ]
+for k, t in enumerate(T):
+    try:
+        i, j = k, t.index("S")
+        break
+    except ValueError:
+        pass
 
-    i += 1
 
-print(i // 2)
+for d in D[i][j]:
+    p = (i, j)
+    c = d
+    loop = [p]
+    while c != (i, j):
+        loop.append(c)
+
+        (a, b) = D[c[0]][c[1]]
+
+        if (a, b) == (NO, NO):
+            break
+
+        p, c = c, (a if a != p else b)
+    else:
+        break
+
+print(len(loop) // 2)
