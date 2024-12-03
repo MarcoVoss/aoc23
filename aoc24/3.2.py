@@ -12,6 +12,11 @@ for C in open("3.2.txt", 'r').readlines():
         elif c == "o" and DO == 1:
             DO = 2
             DONT = 2
+        elif c == "(" and DO == 2:
+            DO = 3
+        elif c == ")" and DO == 3:
+            DO = 0
+            A = True
         elif c == "n" and DONT == 2:
             DO = 0
             DONT = 3
@@ -24,11 +29,6 @@ for C in open("3.2.txt", 'r').readlines():
         elif c == ")" and DONT == 6:
             DONT = 0
             A = False
-        elif c == "(" and DO == 2:
-            DO = 3
-        elif c == ")" and DO == 3:
-            DO = 0
-            A = True
         elif c == "m":
             M = 1
         elif c == "u" and M == 1:
