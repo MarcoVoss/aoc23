@@ -7,16 +7,14 @@ def check(position: tuple[int, int]) -> int:
     y, x = position
     return (
         (0 < y < len(M) - 1) and
-        (0 < x < len(M[0]) - 1) and (
-            (
-                (M[y+1][x+1] == "M" and M[y-1][x-1] == "S") or
-                (M[y-1][x-1] == "M" and M[y+1][x+1] == "S")
-            ) and
-            (
-                (M[y+1][x-1] == "M" and M[y-1][x+1] == "S") or
-                (M[y-1][x+1] == "M" and M[y+1][x-1] == "S")
-
-            )
+        (0 < x < len(M[0]) - 1) and
+        (
+            (M[y+1][x+1] == "M" and M[y-1][x-1] == "S") or
+            (M[y-1][x-1] == "M" and M[y+1][x+1] == "S")
+        ) and
+        (
+            (M[y+1][x-1] == "M" and M[y-1][x+1] == "S") or
+            (M[y-1][x+1] == "M" and M[y+1][x-1] == "S")
         )
     )
 
