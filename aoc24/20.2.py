@@ -82,8 +82,7 @@ def find_connected_paths(start: tuple[int, int], debug: dict[int, set[tuple[int,
                             if COSTS[dy][dx] < sc - (y + x):
                                 d = sc - (y + x) - COSTS[dy][dx]
                                 debug.setdefault(d, set())
-
-                                debug[d].add(tuple(sorted([(sy, sx), (dy, dx)], key=lambda x: (x[0], x[1]))))
+                                debug[d].add(((sy, sx), (dy, dx)))
 
 
 debug = {}
