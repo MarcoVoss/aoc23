@@ -1,4 +1,3 @@
-MAP: list[list[str]] = []
 COSTS: list[list[int]] = []
 START: tuple[int, int] = (0, 0)
 END: tuple[int, int] = (0, 0)
@@ -11,54 +10,71 @@ DIRECTIONS: list[tuple[int, int]] = [EAST, SOUTH, WEST, NORTH]
 BORDER = "#"
 START_SYMBOL = "S"
 END_SYMBOL = "E"
+INFINITE = -1
+INITIAL = -2
 
 for y, line in enumerate(open('16.2.txt').readlines()):
-    MAP.append(list(line.strip()))
-    COSTS.append([0] * len(line.strip()))
-
-    try:
-        START = y, line.index(START_SYMBOL)
-    except ValueError:
-        pass
-
-    try:
-        END = y, line.index(END_SYMBOL)
-    except ValueError:
-        pass
-
-CONNECTION: dict[tuple[int, int], tuple[int, int] | None] = {START: START}
-fields_to_check = [(START, EAST)]
-
-while fields_to_check:
-    CURRENT, CURRENT_DIRECTION = fields_to_check.pop(0)
-
-    for DIRECTION in DIRECTIONS:
-        NEXT = (CURRENT[0] + DIRECTION[0], CURRENT[1] + DIRECTION[1])
-
-        if DIRECTION == CURRENT_DIRECTION:
-            TURN_COST = 0
-        elif DIRECTION[0] == -CURRENT_DIRECTION[0] and DIRECTION[1] == -CURRENT_DIRECTION[1]:
-            TURN_COST = 2000
+    costs = []
+    for x, place in enumerate(line.strip()):
+        if place == BORDER:
+            costs.append(INFINITE)
         else:
-            TURN_COST = 1000
+            costs.append(INITIAL)
+            if place == START_SYMBOL:
+                START = y, x
+            elif place == END_SYMBOL:
+                END = y, x
+    COSTS.append(costs)
 
-        PREDICTED_COST = COSTS[CURRENT[0]][CURRENT[1]] + STEP_WIDTH + TURN_COST
-        NEXT_COST = COSTS[NEXT[0]][NEXT[1]]
+COSTS[START[0]][START[1]] = 0
+to_check = [(START, EAST)]
+while to_check:
+    (cy, cx), (cdy, cdx) = to_check.pop(0)
+    cc = COSTS[cy][cx]
+    for dy, dx in DIRECTIONS:
+        ny, nx = cy + dy, cx + dx
 
-        if MAP[NEXT[0]][NEXT[1]] != BORDER and (NEXT_COST == 0 or NEXT_COST > PREDICTED_COST):
-            CONNECTION[NEXT] = CURRENT
-            fields_to_check.append((NEXT, DIRECTION))
-            COSTS[NEXT[0]][NEXT[1]] = PREDICTED_COST
+        if 0 <= ny < len(COSTS) and 0 <= nx < len(COSTS[0]) and COSTS[ny][nx] != INFINITE:
+            pc = cc + 1
+            if (dy, dx) == (cdy, cdx):
+                pc += 0
+            elif dy == -cdy and dx == -cdx:
+                pc += 2000
+            else:
+                pc += 1000
+            if COSTS[ny][nx] == INITIAL or COSTS[ny][nx] >= pc:
+                to_check.insert(0, ((ny, nx), (dy, dx)))
+                COSTS[ny][nx] = pc
 
-PATH_BACK = []
-CURRENT = END
-while True:
-    PATH_BACK.append(CURRENT)
-    if CURRENT == START:
-        break
-    CURRENT = CONNECTION[CURRENT]
+TO_CHECK = [(END, None)]
+PATH_BACK = set()
+while TO_CHECK:
+    # have to check the direction too, for the statements in line 60 and 62
+    (cy, cx), direction = TO_CHECK.pop(0)
+    PATH_BACK.add((cy, cx))
+    cc = COSTS[cy][cx]
 
-for y, line in enumerate(MAP):
-    print("".join(["$" if (y, x) in PATH_BACK else c for x, c in enumerate(line)]))
+    for dy, dx in DIRECTIONS:
+        ny, nx = cy + dy, cx + dx
+        if 0 <= ny < len(COSTS) and 0 <= nx < len(COSTS[0]) and COSTS[ny][nx] != INFINITE:
+            if (cy, cx) == END:
+                if COSTS[ny][nx] == cc - 1:
+                    TO_CHECK.append(((ny, nx), (dy, dx)))
+            elif direction == (dy, dx):
+                if COSTS[ny][nx] in [cc - 1, cc - 1000 - 1, cc + 1000 - 1]:
+                    TO_CHECK.append(((ny, nx), (dy, dx)))
+            elif COSTS[ny][nx] in [cc - 1, cc - 1000 - 1]:
+                TO_CHECK.append(((ny, nx), (dy, dx)))
+
+for y, line in enumerate(COSTS):
+    l = ""
+    for x, cost in enumerate(line):
+        if cost == INFINITE:
+            l += "      "
+        else:
+            l += " " + str(COSTS[y][x]).zfill(5)
+    print(l)
 
 print(len(PATH_BACK))
+
+# 499 too high
